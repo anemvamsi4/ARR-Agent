@@ -3,7 +3,8 @@ import pymupdf
 import pathlib
 
 class ImageExtraction:
-    def __init__(self, output_dir: str, text_jsonpath: str):
+    def __init__(self, pdf_path: str, output_dir: str, text_jsonpath: str):
+        self.pdf_path = pdf_path
         self.output_dir = output_dir
         self.text_jsonpath = text_jsonpath
 
@@ -23,10 +24,10 @@ class ImageExtraction:
         metadata_list = []
 
         try:
-            pdf_path = pathlib.Path(self.file_path)
+            pdf_path = pathlib.Path(self.pdf_path)
             with pymupdf.open(pdf_path) as doc:
                 output_path = pathlib.Path(self.output_dir)
-                output_path.mkdir(exist_ok=True)
+                output_path.mkdir(parents= True, exist_ok=True)
 
                 for page_num, page in enumerate(doc):
                     images_on_page = page.get_images(full=True)
@@ -52,7 +53,7 @@ class ImageExtraction:
 
                         if save:
                             self.save_image(image_bytes, metadata["image_path"])
-                            print(f"{len(images)} Images saved to {self.output_dir}")
+            print(f"{len(images)} Image saved to {self.output_dir}")
 
         except Exception as e:
             print(f"Error extracting images: {e}")
@@ -89,10 +90,11 @@ class ImageExtraction:
 if __name__ == '__main__':
     import sys
 
-    output_dir = sys.argv[1]
-    text_jsonpath = sys.argv[2]
+    pdf_path = sys.argv[1]
+    output_dir = sys.argv[2]
+    text_jsonpath = sys.argv[3]
 
-    extractor = ImageExtraction(output_dir, text_jsonpath)
+    extractor = ImageExtraction(pdf_path, output_dir, text_jsonpath)
     
     # Extract Images
     image_metadata = extractor.extract()
