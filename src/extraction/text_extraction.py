@@ -9,9 +9,15 @@ class PDFTextExtractor:
         self.output_dir = output_dir
         self.structured_text = ""
 
-    def extract_markdown(self) -> str:
-        """Extract structured text as Markdown."""
+    def extract(self, save_as: str) -> str:
+        """Extract structured text as Markdown and Saves."""
         self.structured_text = pymupdf4llm.to_markdown(self.file_path)
+
+        if (save_as == 'json') or (save_as == 'both'):
+            self.save_json()
+        elif (save_as == 'md') or (save_as == 'both'):
+            self.save_markdown()
+
         return self.structured_text
 
     def save_markdown(self, output_path: str = None):
@@ -70,8 +76,4 @@ if __name__ == "__main__":
     extractor = PDFTextExtractor(pdf_path, output_dir)
     
     # Extract text
-    markdown_text = extractor.extract_markdown()
-    
-    # Save as Markdown and JSON
-    extractor.save_markdown()
-    extractor.save_json()
+    markdown_text = extractor.extract(save_as='both')
