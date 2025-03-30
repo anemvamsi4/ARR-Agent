@@ -1,5 +1,5 @@
 # Progress of Agent-ARRP
-checkout Phase-0/MVP branch [here](https://github.com/anemvamsi4/Agent-ARRP/blob/phase-0/MVP/PROGRESS.md),for progress!
+checkout Phase-0/MVP branch [here](https://github.com/anemvamsi4/Agent-ARRP/blob/phase-0/MVP),for progress!
 ## Currently Working
 
 - [ ] Phase-0: Create a Minimum Viable Product (MVP) for the agent to reproduce a research paper.
