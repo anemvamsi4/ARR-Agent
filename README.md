@@ -8,3 +8,7 @@ An AI Agent that's capable of reproducing research papers. It can read the paper
 - Generate code to reproduce the results
 - Run the code and reproduce the results
 - Generate a report on the reproducibility of the paper
+
+---
+
+Checkout Exectution Plan & current Progress [here](https://github.com/anemvamsi4/Agent-ARRP/blob/main/PROGRESS.md).
