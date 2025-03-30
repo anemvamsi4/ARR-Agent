@@ -1,83 +1,69 @@
-import os
-import sys
-
-import re
 import json
-import ppymupdf4llm
+import pathlib
+import pymupdf4llm
 
-class StructuredTextExtractor:
-    def __init__(self):
-        self.file_path = None
 
-    
-    def extract(self, file_path: str, save: bool = False) -> dict:
-        """Extract structured text from the PDF file."""
+class PDFTextExtractor:
+    def __init__(self, file_path: str):
         self.file_path = file_path
-        self.structured_text = self.extract_text()
-        
-        if save:
-            self.save_text()
-        
+        self.structured_text = ""
+
+    def extract_markdown(self) -> str:
+        """Extract structured text as Markdown."""
+        self.structured_text = pymupdf4llm.to_markdown(self.file_path)
         return self.structured_text
 
-    def extract_text(self) -> dict:
-        """Extract text and structure it based on headings and content."""
-        structured_content = []
-        current_section = {"heading": "Introduction", "content": ""}
+    def save_markdown(self, output_path: str = None):
+        """Save extracted Markdown text."""
+        if output_path is None:
+            output_path = self.file_path.replace(".pdf", ".md")
 
-        try:
-            doc = fitz.open(self.file_path)
-            for page in doc:
-                blocks = page.get_text("blocks")  # Extract text in blocks
-                blocks.sort(key=lambda x: x[1])  # Sort blocks by y-coordinates
-                
-                for block in blocks:
-                    text = block[4].strip()
-                    if not text or self.is_unwanted_text(text):
-                        continue
-                    
-                    # Detect section headings (multi-line handling)
-                    if self.is_heading(text):
-                        if current_section["content"].strip():
-                            structured_content.append(current_section)
-                        current_section = {"heading": text.strip(), "content": ""}
-                    else:
-                        current_section["content"] += text + "\n\n"
-            
-            # Append the last section
-            if current_section["content"].strip():
-                structured_content.append(current_section)
-            
-            self.structured_text["title"] = doc.metadata.get("title", "Untitled Paper")
-            self.structured_text["sections"] = structured_content
-        except Exception as e:
-            print(f"Error extracting structured text: {e}")
+        pathlib.Path(output_path).write_bytes(self.structured_text.encode())
+        print(f"Markdown saved to {output_path}")
+
+    def save_json(self, output_path: str = None):
+        """Convert Markdown text into JSON and save it."""
+        sections = self.parse_markdown_to_json()
+
+        if output_path is None:
+            output_path = self.file_path.replace(".pdf", ".json")
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(sections, f, indent=4, ensure_ascii=False)
         
-        return self.structured_text
-    
-    def is_heading(self, text: str) -> bool:
-        """Identify section headings based on capitalization and formatting."""
-        return bool(re.match(r'^(\d+\.?\d*\s*)?[A-Z][A-Za-z0-9\s-]+$', text))
-    
-    def is_unwanted_text(self, text: str) -> bool:
-        """Filter out unwanted content like watermarks, footers, and page numbers."""
-        return re.match(r'^\d+$', text)
-    
-    def save_text(self, output_dir: str = None) -> None:
-        """Save the structured text to a JSON file."""
-        if output_dir is None:
-            output_dir = self.file_path.replace('.pdf', '')
-            os.makedirs(output_dir, exist_ok=True)
-            output_path = os.path.join(output_dir, "structured_text.json")
+        print(f"JSON saved to {output_path}")
+
+    def parse_markdown_to_json(self):
+        """Convert extracted Markdown into a structured JSON format."""
+        sections = []
+        current_section = {"heading": None, "content": ""}
         
-        try:
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(self.structured_text, f, indent=4)
-            print(f"Structured text saved to {output_path}")
-        except Exception as e:
-            print(f"Error saving structured text: {e}")
+        for line in self.structured_text.split("\n"):
+            if line.startswith("# "):  # Main title
+                if current_section["heading"]:
+                    sections.append(current_section)
+                current_section = {"heading": line.strip("# ").strip(), "content": ""}
+            elif line.startswith("## "):  # Section headings
+                if current_section["heading"]:
+                    sections.append(current_section)
+                current_section = {"heading": line.strip("# ").strip(), "content": ""}
+            else:
+                current_section["content"] += line + "\n"
+
+        if current_section["heading"]:
+            sections.append(current_section)
+        
+        return {"title": sections[0]["heading"], "sections": sections[1:]}
 
 if __name__ == "__main__":
-    extractor = StructuredTextExtractor()
-    structured_text = extractor.extract(sys.argv[1], save=True)
-    print(json.dumps(structured_text, indent=4)[:500] + "...")
+    import sys
+
+    pdf_path = sys.argv[1]
+    extractor = PDFTextExtractor(pdf_path)
+    
+    # Extract text
+    markdown_text = extractor.extract_markdown()
+    
+    # Save as Markdown and JSON
+    extractor.save_markdown()
+    extractor.save_json()
