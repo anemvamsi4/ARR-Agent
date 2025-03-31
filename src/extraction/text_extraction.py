@@ -16,8 +16,8 @@ class PDFTextExtractor:
 
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def extract(self, save: bool = True) -> str:
-        """Extract structured text as Markdown & returns Markdown text."""
+    def extract(self, save: bool = True, ) -> str:
+        """Extract structured text as Markdown & JSON, save both, but return only Markdown."""
         
         # Extract Markdown
         converter = PdfConverter(artifact_dict=create_model_dict())
@@ -27,8 +27,36 @@ class PDFTextExtractor:
         if save:
             save_output(rendered, str(self.output_dir), str(self.save_filename))
 
+        json_data = self.get_json(markdown_text, rendered.metadata, save = True)
         return markdown_text
     
+    def get_json(self, markdown_text: str, metadata: dict, save: bool):
+        structured_data = {
+            'document_metadata': metadata,
+            'sections': []
+        }
+
+        current_section = None
+        for line in markdown_text.split("\n"):
+            if line.startswith("#"):
+                if current_section is not None:
+                    structured_data["sections"].append(current_section)
+                current_section = {"title": line.strip("# "), "content": ""}
+            elif current_section is not None:
+                current_section["content"] += line + "\n"
+        
+        if current_section:
+            structured_data["sections"].append(current_section)
+
+        if save:
+            output_path = str(Path.joinpath(self.output_dir, self.save_filename)) +  ".json"
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(structured_data, f, indent=4, ensure_ascii=False)
+
+        return structured_data
+                
+            
+
 if __name__ == "__main__":
     import sys
 
