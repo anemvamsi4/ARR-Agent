@@ -1,72 +1,59 @@
+import time
 import json
-import pathlib
-import pymupdf4llm
+from pathlib import Path
 
+from marker.converters.pdf import PdfConverter
+from marker.config.parser import ConfigParser
+from marker.models import create_model_dict
+from marker.output import text_from_rendered, save_output
 
 class PDFTextExtractor:
     def __init__(self, file_path: str, output_dir: str):
-        self.file_path = file_path
-        self.output_dir = output_dir
+        self.file_path = Path(file_path)
+        self.output_dir = Path(output_dir)
+        self.save_filename = self.file_path.stem
+
         self.structured_text = ""
 
-    def extract(self, save_as: str) -> str:
-        """Extract structured text as Markdown and Saves."""
-        self.structured_text = pymupdf4llm.to_markdown(self.file_path)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        if (save_as == 'json') or (save_as == 'both'):
-            self.save_json()
-        elif (save_as == 'md') or (save_as == 'both'):
-            self.save_markdown()
-
-        return self.structured_text
-
-    def save_markdown(self, output_path: str = None):
-        """Save extracted Markdown text."""
-        if output_path is None:
-            filename = self.file_path.split('/')[-1].replace(".pdf", ".md")
-            output_path = self.output_dir + filename
-
-            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-
-        pathlib.Path(output_path).write_bytes(self.structured_text.encode())
-        print(f"Markdown saved to {output_path}")
-
-    def save_json(self, output_path: str = None):
-        """Convert Markdown text into JSON and save it."""
-        sections = self.parse_markdown_to_json()
-
-        if output_path is None:
-            filename = self.file_path.split('/')[-1].replace(".pdf", ".json")
-            output_path = self.output_dir + filename
-
-            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(sections, f, indent=4, ensure_ascii=False)
+    def extract(self, save: bool = True) -> str:
+        """Extract structured text as Markdown & JSON, save both, but return only Markdown."""
         
-        print(f"JSON saved to {output_path}")
-
-    def parse_markdown_to_json(self):
-        """Convert extracted Markdown into a structured JSON format."""
-        sections = []
-        current_section = {"heading": None, "content": ""}
+        # Extract Markdown
+        converter_md = PdfConverter(artifact_dict=create_model_dict())
+        rendered_md = converter_md(str(self.file_path))
+        markdown_text, _, _ = text_from_rendered(rendered_md)
         
-        for line in self.structured_text.split("\n"):
-            if line.startswith("# "):  # Main title
-                if current_section["heading"]:
-                    sections.append(current_section)
-                current_section = {"heading": line.strip("# ").strip(), "content": ""}
-            elif line.startswith("## "):  # Section headings
-                if current_section["heading"]:
-                    sections.append(current_section)
-                current_section = {"heading": line.strip("# ").strip(), "content": ""}
-            else:
-                current_section["content"] += line + "\n"
+        # Extract JSON
+        config = {"output_format": "json"}
+        config_parser = ConfigParser(config)
 
-        if current_section["heading"]:
-            sections.append(current_section)
-        
-        return {"title": sections[0]["heading"], "sections": sections[1:]}
+        converter_json = PdfConverter(
+            config=config_parser.generate_config_dict(),
+            artifact_dict=create_model_dict(),
+            processor_list=config_parser.get_processors(),
+            renderer=config_parser.get_renderer(),
+            llm_service=config_parser.get_llm_service()
+        )
+
+        rendered_json = converter_json(str(self.file_path))
+        json_text, _, _ = text_from_rendered(rendered_json)
+
+        if save:
+            save_output(rendered_md, str(self.output_dir), str(self.save_filename))
+            self.save_json(json_text)
+
+        return markdown_text
+
+    def save_json(self, json_text: str):
+        """Save extracted text as JSON."""
+        json_path = self.output_dir / f"{self.save_filename}.json"
+
+        with open(json_path, "w", encoding="utf-8") as f:
+            f.write(json_text)
+
+        print(f"JSON saved to {json_path}")
 
 if __name__ == "__main__":
     import sys
@@ -75,5 +62,10 @@ if __name__ == "__main__":
     output_dir = sys.argv[2]
     extractor = PDFTextExtractor(pdf_path, output_dir)
     
-    # Extract text
-    markdown_text = extractor.extract(save_as='both')
+    start_time = time.time()
+    
+    # Extract Markdown (JSON is saved internally)
+    markdown_text = extractor.extract(save=True)
+    
+    print("\nTime taken for extraction: ", time.time() - start_time)
+    print("\nExtracted Markdown Preview:\n", markdown_text[:500])
