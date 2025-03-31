@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 
 from marker.converters.pdf import PdfConverter
-from marker.config.parser import ConfigParser
 from marker.models import create_model_dict
 from marker.output import text_from_rendered, save_output
 
@@ -18,43 +17,18 @@ class PDFTextExtractor:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def extract(self, save: bool = True) -> str:
-        """Extract structured text as Markdown & JSON, save both, but return only Markdown."""
+        """Extract structured text as Markdown & returns Markdown text."""
         
         # Extract Markdown
-        converter_md = PdfConverter(artifact_dict=create_model_dict())
-        rendered_md = converter_md(str(self.file_path))
-        markdown_text, _, _ = text_from_rendered(rendered_md)
+        converter = PdfConverter(artifact_dict=create_model_dict())
+        rendered = converter(str(self.file_path))
+        markdown_text, _, _ = text_from_rendered(rendered)
         
-        # Extract JSON
-        config = {"output_format": "json"}
-        config_parser = ConfigParser(config)
-
-        converter_json = PdfConverter(
-            config=config_parser.generate_config_dict(),
-            artifact_dict=create_model_dict(),
-            processor_list=config_parser.get_processors(),
-            renderer=config_parser.get_renderer(),
-            llm_service=config_parser.get_llm_service()
-        )
-
-        rendered_json = converter_json(str(self.file_path))
-        json_text, _, _ = text_from_rendered(rendered_json)
-
         if save:
-            save_output(rendered_md, str(self.output_dir), str(self.save_filename))
-            self.save_json(json_text)
+            save_output(rendered, str(self.output_dir), str(self.save_filename))
 
         return markdown_text
-
-    def save_json(self, json_text: str):
-        """Save extracted text as JSON."""
-        json_path = self.output_dir / f"{self.save_filename}.json"
-
-        with open(json_path, "w", encoding="utf-8") as f:
-            f.write(json_text)
-
-        print(f"JSON saved to {json_path}")
-
+    
 if __name__ == "__main__":
     import sys
 
@@ -64,7 +38,7 @@ if __name__ == "__main__":
     
     start_time = time.time()
     
-    # Extract Markdown (JSON is saved internally)
+    # Extract Markdown
     markdown_text = extractor.extract(save=True)
     
     print("\nTime taken for extraction: ", time.time() - start_time)
