@@ -4,7 +4,7 @@ checkout Phase-0/MVP branch [here](https://github.com/anemvamsi4/Agent-ARRP/tree
 
 - [ ] Phase-0: Create a Minimum Viable Product (MVP) for the agent to reproduce a research paper.
 
-    - [ ] Basic data extraction (text, equations, tables, figures) from the paper
+    - [x] Basic data extraction (text, equations, tables, figures) from the paper
     - [ ] Genetaring Implementation plan for code generation
     - [ ] Basic code generation (Python, PyTorch, TensorFlow) for the extracted implementation details
     - [ ] Basic code execution and result comparison (if possible)
