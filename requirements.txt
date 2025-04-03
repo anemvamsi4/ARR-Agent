@@ -1,0 +1,10 @@
+marker-pdf
+langchain
+langchain-anthropic
+langchain-openai
+langchain-deepseek
+langchain_community 
+langchain_experimental
+langgraph
+langsmith
+openai
