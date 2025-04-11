@@ -1,17 +1,10 @@
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 import dotenv
 
 dotenv.load_dotenv()
 
-openai_models = {
-    "gpt-4.5-preview": "gpt-4.5-preview",
-    "gpt-4o" : "gpt-4o",
-    "gpt-4o-mini" : "gpt-4o-mini",
-    "o1" : "o1",
-    "o1-mini" : "o1-mini",
-    "o1-pro" : "o1-pro",
-    "o3-mini" : "o1-mini",
-    "default" : "o3-mini"
+google_models = {
+
 }
 
 if __name__ == "__main__":
@@ -24,12 +17,12 @@ if __name__ == "__main__":
             os.environ[var] = getpass.getpass(f"{var}: ")
 
 
-    _set_env("OPENAI_API_KEY")
+    _set_env("GOOGLE_API_KEY")
 
-    llm = ChatOpenAI(
-            model = openai_models["default"],
+    llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash-001",
             temperature=0,
-            max_tokens = 1024
+            max_tokens=1024
         )
     
     user_input = ["Give me a code base structure for Comparative study of Losses for Semantic Segmentation on LITS dataset,"
@@ -38,4 +31,4 @@ if __name__ == "__main__":
     
     response = llm.invoke([{"role": "user",
                  "content": user_input}])
-    print(response.content)
+    print(response.content) 

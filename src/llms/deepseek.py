@@ -1,4 +1,7 @@
 from langchain_deepseek import ChatDeepSeek
+import dotenv
+
+dotenv.load_dotenv()
 
 deepseek_models = {
     "deepseek-v3" : "deepseek-chat",

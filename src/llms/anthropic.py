@@ -1,4 +1,7 @@
 from langchain_anthropic import ChatAnthropic
+import dotenv
+
+dotenv.load_dotenv()
 
 anthropic_models = {
     "sonnet-3-7" : "claude-3-7-sonnet-latest",
