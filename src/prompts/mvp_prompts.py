@@ -9,7 +9,7 @@ Based on the context provided, generate a structured plan of code blocks (functi
 
 INSTRUCTIONS:
 For each code block, return:
-- `codeblock_name`: Name of the function or class.
+- `name`: Name of the function or class.
 - `description`: Clear explanation of its purpose.
 - `args`: Dictionary of argument names and types.
 - `returns`: Dictionary of return variable names and types.
@@ -27,4 +27,29 @@ Based on the following context, generate the plan:
 {context}
 
 {user_input}
+"""
+
+codegen_prompt = """
+SYSTEM:
+You are a senior Python developer. Given a list of code blocks (functions and classes) meant for a single file, generate the full code for the file.
+
+Each block includes:
+- A `codeblock_name`
+- A `description` of its purpose
+- `args`: arguments with types
+- `returns`: return values with types
+- `type`: either "function" or "class"
+
+GOAL:
+Generate a complete, formatted Python file using this information. Include imports, docstrings, and organize the code logically.
+
+
+NOTE:
+- Only generate the code of the file
+
+USER:
+Filename: {filename}
+
+Code blocks:
+{codeblocks}
 """
