@@ -28,3 +28,14 @@ class PlannerResponse(BaseModel):
 class FileCode(BaseModel):
     filename: str = Field(..., description="Name of the file with path, example: root/models/unet.py")
     code: str = Field(..., description="Python code of all codeblocks of it organized logically")
+
+# Master Review
+class FileIssue(BaseModel):
+    filename: str = Field(..., description="Path to the file with issues")
+    issues: List[str] = Field(..., description="List of problems or bugs found in the file")
+    suggested_fixes: str = Field(..., description="Suggestions to fix the above issues")
+
+class MasterReviewResponse(BaseModel):
+    overall_satisfied: bool = Field(..., description="Whether the codebase is acceptable overall")
+    general_feedback: str = Field(..., description="Overall feedback for the codebase quality")
+    files_to_fix: List[FileIssue] = Field(..., description="Only include files that need to be fixed")

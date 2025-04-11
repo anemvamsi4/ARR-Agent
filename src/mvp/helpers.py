@@ -38,3 +38,9 @@ def get_file_prompts(filename: str, blocks: List[Union[FunctionPlan, ClassPlan]]
                 )
     
     return codegen_prompt.format(filename=filename, codeblocks=block_descriptions)
+
+def join_codebase(code_dict: Dict[str, str]):
+    full_codebase = ""
+    for filename, code in code_dict.items():
+        full_codebase += f"\n=== {filename} ===\n{code.strip()}\n"
+    return full_codebase
