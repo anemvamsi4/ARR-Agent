@@ -4,7 +4,11 @@ import dotenv
 dotenv.load_dotenv()
 
 google_models = {
-
+    "gemini-2.5-pro" : "gemini-2.5-pro-preview-03-25",
+    "gemini-2.0-flash": "gemini-2.0-flash",
+    "gemini-2.0-flash-lite": "gemini-2.0-flash-lite",
+    "gemini-2.0-flash-thinking": "gemini-2.0-flash-thinking-exp-01-21",
+    "default" : "gemini-2.0-flash"
 }
 
 if __name__ == "__main__":
@@ -20,7 +24,7 @@ if __name__ == "__main__":
     _set_env("GOOGLE_API_KEY")
 
     llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-001",
+            model = google_models['default'],
             temperature=0,
             max_tokens=1024
         )
