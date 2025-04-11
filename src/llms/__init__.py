@@ -1,6 +1,7 @@
 from .anthropic import ChatAnthropic, anthropic_models
 from .deepseek import ChatDeepSeek, deepseek_models
 from .open_ai import ChatOpenAI, openai_models
+from .google_llm import ChatGoogleGenerativeAI, google_models
 
 def get_llm(platform: str, model: str = "default", **args):
     """
@@ -23,4 +24,7 @@ def get_llm(platform: str, model: str = "default", **args):
     
     if platform == "openai":
         return ChatOpenAI(model = openai_models[model], **args)
+    
+    if platform == "google":
+        return ChatGoogleGenerativeAI(model= google_models[model], **args)
     
