@@ -6,6 +6,7 @@ from extraction import PDFTextExtractor
 from llms import get_llm
 from prompts import planner_prompt
 from output_structures import PlannerResponse
+from helpers import group_codeblocks_by_file, get_file_prompts
 
 def extract_text(pdf_path: str, output_dir: str):
     markdown_file = str(Path.joinpath(output_dir, Path(pdf_path).stem, Path(pdf_path).stem)) + '.md'
@@ -20,10 +21,18 @@ def extract_text(pdf_path: str, output_dir: str):
 
 def code_planner(context: str, llm, user_input: str = None) -> PlannerResponse:
     if user_input is None:
-        user_input = "Give me a plan of codebase structure to reproduce results from this paper content"
+        user_input = "Give me a plan of codebase structure to reproduce all results from this paper content"
     
     
     final_prompt = planner_prompt.format(context = context, user_input = user_input)
     planner_llm = llm.with_structured_output(PlannerResponse)
     plan_response = planner_llm.invoke(final_prompt)
     return plan_response
+
+def coder(planner_response, llm):
+    files = group_codeblocks_by_file(planner_response.codeblocks)
+    file_prompts = [get_file_prompts(filename, blocks) for filename, blocks in files.items()]
+    filenames = list(files.keys())
+
+    results = llm.batch(file_prompts)
+    return dict(zip(filenames, results))
