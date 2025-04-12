@@ -1,18 +1,21 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Literal, Union
+from typing import List, Dict, Literal, Union, Optional
 
 # Code Planning
 class CodeBlockPlan(BaseModel):
+    """Base structure for any code block (function or method)"""
     name: str = Field(..., description="Name of the codeblock(function or method)")
-    description: str = Field(..., description= "Short and clear explaination of codeblock's role")
-    args : Dict[str, str] = Field(..., "Dictionary mapping of argument names to types")
+    description: str = Field(..., description="Short and clear explanation of codeblock's role")
+    args: Dict[str, str] = Field(..., description="Dictionary mapping of argument names to types")
     returns: Dict[str, str] = Field(..., description="Dictionary mapping of return variable names to types")
 
 class FunctionPlan(CodeBlockPlan):
+    """Structure for a function in the codebase"""
     type: Literal["function"] = "function"
     filename: str = Field(..., description="Target file for this function, example: root/utils/helpers.py")
 
 class ClassPlan(BaseModel):
+    """Structure for a class in the codebase"""
     type: Literal["class"] = "class"
     name: str = Field(..., description="Name of the class")
     description: str = Field(..., description="Description of the class and what it does")
@@ -21,21 +24,27 @@ class ClassPlan(BaseModel):
     filename: str = Field(..., description="Target file for this class, example: root/models/unet.py")
 
 class PlannerResponse(BaseModel):
-    codeblocks : List[Union[FunctionPlan, ClassPlan]] = Field(...,
-                    description="All code units: either function or class; for the codebase")
+    """Response from the planner containing all code blocks"""
+    codeblocks: List[Union[FunctionPlan, ClassPlan]] = Field(
+        ...,
+        description="All code units: either function or class; for the codebase"
+    )
 
 # Code Generation
 class FileCode(BaseModel):
+    """Structure for generated code of a single file"""
     filename: str = Field(..., description="Name of the file with path, example: root/models/unet.py")
     code: str = Field(..., description="Python code of all codeblocks of it organized logically")
 
 # Master Review
 class FileIssue(BaseModel):
+    """Structure for issues found in a specific file"""
     filename: str = Field(..., description="Path to the file with issues")
     issues: List[str] = Field(..., description="List of problems or bugs found in the file")
     suggested_fixes: str = Field(..., description="Suggestions to fix the above issues")
 
 class MasterReviewResponse(BaseModel):
+    """Response from the master reviewer"""
     overall_satisfied: bool = Field(..., description="Whether the codebase is acceptable overall")
     general_feedback: str = Field(..., description="Overall feedback for the codebase quality")
     files_to_fix: List[FileIssue] = Field(..., description="Only include files that need to be fixed")
