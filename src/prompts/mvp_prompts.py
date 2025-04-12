@@ -1,7 +1,8 @@
 from langchain.prompts import PromptTemplate
 
+# Planner Prompt - For creating initial code structure plan
 planner_prompt = PromptTemplate(template= 
-                                (
+    (
     "SYSTEM:\n"
     "You are a senior software engineer tasked with decomposing a codebase.\n\n"
 
@@ -25,14 +26,15 @@ planner_prompt = PromptTemplate(template=
     "USER:\n"
     "{user_input}\n\n"
 
-    "CONTEXT\n:"
+    "CONTEXT:\n"
     "{context}"
     ),
     input_variables=["user_input", "context"]
 )
 
+# Code Generation Prompt - For generating code for each file
 codegen_prompt = PromptTemplate(template= 
-                                (
+    (
     "SYSTEM:\n"
     "You are a senior Python developer. Given a list of code blocks (functions and classes) meant for a single file, generate the full code for the file.\n\n"
 
@@ -46,8 +48,12 @@ codegen_prompt = PromptTemplate(template=
     "GOAL:\n"
     "Generate a complete, formatted Python file using this information. Include imports, docstrings, and organize the code logically.\n\n"
 
-    "NOTE:\n"
-    "- Only generate the code of the file\n\n"
+    "INSTRUCTIONS:\n"
+    "- Only generate the code of the file\n"
+    "- Follow Python best practices and PEP 8\n"
+    "- Include proper error handling\n"
+    "- Add necessary imports\n"
+    "- Include clear documentation\n\n"
 
     "USER:\n"
     "Filename: {filename}\n\n"
@@ -58,19 +64,24 @@ codegen_prompt = PromptTemplate(template=
     input_variables=["filename", "codeblocks"]
 )
 
+# Master Review Prompt - For reviewing the entire codebase
 master_prompt = PromptTemplate(template=
-                               (
+    (
     "SYSTEM:\n"
     "You are a senior software engineer tasked with reviewing the full codebase "
     "against the original plan. Provide high-level and specific feedback.\n\n"
+    
     "PROJECT PLAN:\n"
     "{plan}\n\n"
+    
     "CODEBASE:\n"
     "{codebase}\n\n"
+    
     "Please list:\n"
     "1. High-level feedback on the overall code quality and structure\n"
     "2. Files that have issues (only include those with problems)\n"
     "3. For each file, list the issues and suggestions to fix them\n\n"
+    
     "Respond in the following JSON format:\n"
     "{\n"
     "  'overall_satisfied': bool,\n"
@@ -84,6 +95,40 @@ master_prompt = PromptTemplate(template=
     "    ...\n"
     "  ]\n"
     "}"
-),
-        input_variables=["plan", "codebase"]
-    )
+    ),
+    input_variables=["plan", "codebase"]
+)
+
+# Code Fixer Prompt - For fixing issues in specific files
+fixer_prompt = PromptTemplate(template=
+    (
+    "SYSTEM:\n"
+    "You are a senior Python developer tasked with fixing code issues.\n\n"
+    
+    "GOAL:\n"
+    "Fix the code based on the provided issues and suggestions while maintaining the original functionality.\n\n"
+    
+    "INSTRUCTIONS:\n"
+    "1. Review the current code and identified issues\n"
+    "2. Implement the suggested fixes\n"
+    "3. Ensure the fixed code:\n"
+    "   - Maintains the original functionality\n"
+    "   - Follows Python best practices and PEP 8\n"
+    "   - Has proper error handling\n"
+    "   - Includes necessary imports\n"
+    "   - Has clear documentation\n"
+    "   - Addresses all identified issues\n\n"
+    
+    "CURRENT CODE:\n"
+    "{current_code}\n\n"
+    
+    "ISSUES:\n"
+    "{issues}\n\n"
+    
+    "SUGGESTED FIXES:\n"
+    "{suggested_fixes}\n\n"
+    
+    "Please provide the complete fixed version of the code."
+    ),
+    input_variables=["current_code", "issues", "suggested_fixes"]
+)
