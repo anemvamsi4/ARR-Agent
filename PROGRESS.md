@@ -7,7 +7,7 @@ checkout [Phase-0/MVP](https://github.com/anemvamsi4/ARR-Agent/tree/phase-0/MVP)
     - [x] Basic data extraction (text, equations, tables, figures) from the paper
     - [ ] Genetaring Implementation plan for code generation
     - [ ] Basic code generation (Python, PyTorch, TensorFlow) for the extracted implementation details
-    - [ ] Basic code execution and result comparison (if possible)
+    - [ ] Basic code execution and result comparison (optional)
     - [ ] Basic report generation for execution of the generated code
     - [ ] Basic user interface for the agent to interact with the user (maybe)
 
