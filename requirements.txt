@@ -9,3 +9,4 @@ langchain_experimental
 langgraph
 langsmith
 openai
+python-dotenv

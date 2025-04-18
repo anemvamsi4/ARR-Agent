@@ -1,3 +1,11 @@
+.idx
+.venv
+.vscode
+build
+
 src/extraction/__pycache__
 src/mvp/nodes/__pycache__/
 src/llms/__pycache__/
+src/mvp/__pycache__
+
+src/arr_agent.egg-info
