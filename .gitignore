@@ -3,6 +3,7 @@
 .vscode
 build
 
+.env
 src/extraction/__pycache__
 src/mvp/nodes/__pycache__/
 src/llms/__pycache__/

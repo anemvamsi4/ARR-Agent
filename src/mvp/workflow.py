@@ -126,31 +126,31 @@ def create_workflow() -> StateGraph:
     workflow = StateGraph(State)
     
     # Add nodes
-    workflow.add_node("extract_text", extract_text_node)
-    workflow.add_node("codebase_structure", codebase_structure_node)
-    workflow.add_node("code_planner", code_planner_node)
-    workflow.add_node("coder", coder_node)
-    workflow.add_node("master_review", master_review_node)
-    workflow.add_node("code_fixer", code_fixer_node)
+    workflow.add_node("extract_text_node", extract_text_node)
+    workflow.add_node("codebase_structure_node", codebase_structure_node)
+    workflow.add_node("code_planner_node", code_planner_node)
+    workflow.add_node("coder_node", coder_node)
+    workflow.add_node("master_review_node", master_review_node)
+    workflow.add_node("code_fixer_node", code_fixer_node)
     
     # Set edges
-    workflow.set_entry_point("extract_text")
-    workflow.add_edge("extract_text", "codebase_structure")
-    workflow.add_edge("codebase_structure", "code_planner")
-    workflow.add_edge("code_planner", "coder")
-    workflow.add_edge("coder", "master_review")
+    workflow.set_entry_point("extract_text_node")
+    workflow.add_edge("extract_text_node", "codebase_structure_node")
+    workflow.add_edge("codebase_structure_node", "code_planner_node")
+    workflow.add_edge("code_planner_node", "coder_node")
+    workflow.add_edge("coder_node", "master_review_node")
     
     # Conditional edge
     workflow.add_conditional_edges(
-        "master_review",
+        "master_review_node",
         should_continue,
         {
-            True: "code_fixer",
+            True: "code_fixer_node",
             False: END
         }
     )
     
-    workflow.add_edge("code_fixer", "master_review")
+    workflow.add_edge("code_fixer_node", "master_review_node")
     
     # Compile
     return workflow.compile()
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     
     workflow = create_workflow()
 
-    initial_state =     {
+    initial_state = {
         "input": "Implement a system for image classification using a CNN.",
         "pdf_path": sys.argv[1],
         "output_dir": sys.argv[2],
