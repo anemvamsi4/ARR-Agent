@@ -1,7 +1,7 @@
 [project]
 name = "arr-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "An AI Agent to Reproduce Research Publications."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
